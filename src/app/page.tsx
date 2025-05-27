@@ -1,103 +1,171 @@
-import Image from "next/image";
+// app/page.tsx
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import {
+  Container,
+  Typography,
+  Button,
+  Paper,
+  TextField,
+  Divider
+} from '@mui/material'
+
+// Poprawne ścieżki importu – patrz tsconfig.json (baseUrl: ".", paths: { "@/*": ["*"] })
+import InputTable, { InputData } from '../components/InputTable'
+import ProfitTable from '../components/ProfitTable'
+import ResultsTable from '../components/ResultsTable'
+
+interface Project {
+  id: number
+  name: string
+  input: InputData
+  result?: any
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // Domyślne dane: 2 dostawców, 3 odbiorców
+  const defaultData: InputData = {
+    supply: [20, 30],
+    demand: [10, 28, 27],
+    buyPrice: [10, 12],
+    sellPrice: [30, 25, 30],
+    cost: [
+      [8, 14, 17],
+      [12, 9, 19]
+    ]
+  }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [projects, setProjects] = useState<Project[]>([])
+
+  // 1) Pobierz istniejące projekty z bazy
+  useEffect(() => {
+    fetch('/api/projects')
+      .then((res) => res.json())
+      .then((rows: any[]) =>
+        setProjects(
+          rows.map((r) => ({
+            id: r.id,
+            name: r.name,
+            input: JSON.parse(r.input),
+            result: r.result ? JSON.parse(r.result) : undefined
+          }))
+        )
+      )
+  }, [])
+
+  // 2) Dodaj nowy projekt
+  const addProject = async () => {
+    const name = `Projekt ${projects.length + 1}`
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, data: defaultData })
+    })
+    const p = await res.json()
+    setProjects((ps) => [...ps, { id: p.id, name: p.name, input: defaultData }])
+  }
+
+  // 3) Aktualizuj nazwę lub dane wejściowe
+  const updateProject = async (
+    id: number,
+    field: 'name' | 'data',
+    value: any
+  ) => {
+    const body: any = {}
+    if (field === 'name') body.name = value
+    else body.data = value
+
+    await fetch(`/api/projects/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    setProjects((ps) =>
+      ps.map((p) =>
+        p.id === id
+          ? field === 'name'
+            ? { ...p, name: value }
+            : { ...p, input: value }
+          : p
+      )
+    )
+  }
+
+  // 4) Usuń projekt
+  const deleteProject = async (id: number) => {
+    await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+    setProjects((ps) => ps.filter((p) => p.id !== id))
+  }
+
+  // 5) Wywołaj POST /api/solve i zapisz wynik
+  const solveProject = async (id: number, data: InputData) => {
+    const res = await fetch('/api/solve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId: id, ...data })
+    })
+    const result = await res.json()
+    // przechowaj input i wynik
+    await updateProject(id, 'data', data)
+    setProjects((ps) =>
+      ps.map((p) => (p.id === id ? { ...p, result } : p))
+    )
+  }
+
+  return (
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Zagadnienie Pośrednika — Projekty
+      </Typography>
+
+      <Button variant="contained" onClick={addProject} sx={{ mb: 2 }}>
+        Dodaj projekt
+      </Button>
+
+      {projects.map((p) => (
+        <Paper key={p.id} sx={{ p: 2, mb: 3 }}>
+          <TextField
+            label="Nazwa projektu"
+            value={p.name}
+            onChange={(e) => updateProject(p.id, 'name', e.target.value)}
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <Button
+            color="error"
+            onClick={() => deleteProject(p.id)}
+            sx={{ mb: 2 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Usuń
+          </Button>
+
+          {/* <-- Tutaj powinna się wyświetlić tabela */}
+          <InputTable
+            data={p.input}
+            setData={(d) => updateProject(p.id, 'data', d)}
+          />
+
+          <Divider sx={{ my: 2 }} />
+
+          <Button
+            variant="contained"
+            onClick={() => solveProject(p.id, p.input)}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+            Rozwiąż
+          </Button>
+
+          {p.result && (
+            <>
+              <ProfitTable unitProfits={p.result.unitProfits} />
+              <ResultsTable
+                plan={p.result.plan}
+                totalProfit={p.result.totalProfit}
+              />
+            </>
+          )}
+        </Paper>
+      ))}
+    </Container>
+  )
 }
