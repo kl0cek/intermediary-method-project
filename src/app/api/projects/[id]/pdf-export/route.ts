@@ -1,6 +1,6 @@
 // /app/api/projects/[id]/pdf-export/route.ts
 import jsPDF from 'jspdf';
-import   'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { InputData } from '../../../../../components/InputTable';
 import { PlanItem } from '../../../../../components/ResultsTable';
 
@@ -27,7 +27,7 @@ export const usePDFExport = () => {
     const doc = new jsPDF();
     
     // Ustawienia dokumentu
-    doc.setFont('helvetica');
+    doc.setFont('Helvetica');
     doc.setFontSize(16);
     doc.text('Raport Optymalizacji Transportu', 20, 20);
     
@@ -39,15 +39,15 @@ export const usePDFExport = () => {
     
     // 1. Tabela danych wejściowych
     doc.setFontSize(14);
-    doc.text('Dane wejściowe', 20, yPosition);
+    doc.text('Dane wejsciowe', 20, yPosition);
     yPosition += 10;
     
     // Nagłówki dla tabeli danych wejściowych
-    const inputHeaders = ['Zakup ↓ / Sprzedaż →'];
+    const inputHeaders = ['Zakup / Sprzedaz'];
     data.inputData.sellPrice.forEach((_, j) => {
       inputHeaders.push(`O${j + 1} (${data.inputData.sellPrice[j]})`);
     });
-    inputHeaders.push('Podaż');
+    inputHeaders.push('Podaz');
     
     // Dane dla tabeli wejściowej
     const inputTableData: (string | number)[][] = [];
@@ -69,7 +69,7 @@ export const usePDFExport = () => {
     demandRow.push('');
     inputTableData.push(demandRow);
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
       head: [inputHeaders],
       body: inputTableData,
@@ -110,7 +110,7 @@ export const usePDFExport = () => {
       profitTableData.push(tableRow);
     });
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
       head: [profitHeaders],
       body: profitTableData,
@@ -143,9 +143,9 @@ export const usePDFExport = () => {
       ]);
     });
     
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPosition,
-      head: [['Dostawca', 'Odbiorca', 'Ilość']],
+      head: [['Dostawca', 'Odbiorca', 'Ilosc']],
       body: transportTableData,
       theme: 'grid',
       styles: { 
@@ -164,13 +164,13 @@ export const usePDFExport = () => {
     
     // Łączny zysk
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Łączny zysk: ${data.totalProfit.toFixed(2)}`, 20, yPosition);
+    doc.setFont('Helvetica', 'bold');
+    doc.text(`Laczny zysk: ${data.totalProfit.toFixed(2)}`, 20, yPosition);
     
     // Dodanie daty generowania
     yPosition += 10;
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('Helvetica', 'normal');
     doc.text(`Wygenerowano: ${new Date().toLocaleString('pl-PL')}`, 20, yPosition);
     
     // Zapisanie pliku
