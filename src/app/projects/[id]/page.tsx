@@ -77,7 +77,7 @@ export default function ProjectPage() {
   if (!input) return <div>Ładowanie...</div>
 
   return (
-    <Container sx={{ mt: 4 }}>
+    <Container sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h6" gutterBottom>
         <Button onClick={() => window.history.back()} sx={{mb:2}}>
           Strona Główna
