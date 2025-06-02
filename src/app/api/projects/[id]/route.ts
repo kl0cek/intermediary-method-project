@@ -1,9 +1,10 @@
 // app/api/projects/[id]/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import db from '../../../../lib/db';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
+  const par = await context.params;
+  const id = Number(par.id);
   return new Promise<NextResponse>((resolve, reject) => {
     db.get(
       'SELECT id, name, input, result FROM projects WHERE id = ?',
@@ -18,7 +19,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
+  const par = await params
+  const id = Number(par.id);
   const { name, data, result } = await request.json();
   const updates: string[] = [];
   const values: any[] = [];
@@ -43,7 +45,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
+  const par = await params
+  const id = Number(par.id);
   return new Promise<NextResponse>((resolve, reject) => {
     db.run('DELETE FROM projects WHERE id = ?', id, function (err) {
       if (err) reject(err);
