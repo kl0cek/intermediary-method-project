@@ -2,8 +2,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import db from '../../../../lib/db';
 
-export async function GET(request: NextRequest, params: { params: { id: string } }) {
-  const par = await params.params;
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
+  const par = await context.params;
   const id = Number(par.id);
   return new Promise<NextResponse>((resolve, reject) => {
     db.get(
