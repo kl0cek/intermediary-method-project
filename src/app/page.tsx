@@ -31,13 +31,13 @@ export default function HomePage() {
   const addProject = async () => {
     const name = `Projekt ${projects.length + 1}`
     const defaultData = {
-      supply: [20, 30],
-      demand: [10, 28, 27],
-      buyPrice: [10, 12],
-      sellPrice: [30, 25, 30],
+      supply: [0, 0],
+      demand: [0, 0, 0],
+      buyPrice: [0, 0],
+      sellPrice: [0, 0, 0],
       cost: [
-        [8, 14, 17],
-        [12, 9, 19]
+        [0, 0, 0],
+        [0, 0, 0]
       ]
     }
 
@@ -61,7 +61,6 @@ export default function HomePage() {
         {projects.map((project) => (
           <ListItem
             key={project.id}
-            button
             component={Link}
             href={`/projects/${project.id}`}
           >

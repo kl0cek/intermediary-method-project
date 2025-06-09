@@ -11,7 +11,7 @@ import {
   Button,
   Divider,
   Box,
-  Paper
+  Paper, Stack
 } from '@mui/material'
 import InputTable from '../../../components/InputTable'
 import ProfitTable from '../../../components/ProfitTable'
@@ -83,9 +83,19 @@ export default function ProjectPage() {
           Strona Główna
         </Button>
       </Typography>
-      <Typography variant="h5" gutterBottom>
-        Projekt: {name}
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignContent="center">
+        <Typography variant="h5" gutterBottom sx={{pb: 3}}>
+          Projekt: {name}
+        </Typography>
+
+        <Button
+          color="error"
+          onClick={() => deleteProject()}
+          sx={{ mb: 2 }}
+        >
+          Usuń projekt
+        </Button>
+      </Stack>
 
       <TextField
         label="Nazwa projektu"
@@ -95,19 +105,13 @@ export default function ProjectPage() {
         sx={{ mb: 2 }}
       />
 
-      <Button
-            color="error"
-            onClick={() => deleteProject()}
-            sx={{ mb: 2 }}
-          >
-            Usuń projekt
-          </Button>
-
       <InputTable data={input} setData={(d) => updateProject('data', d)} />
 
-      <Divider sx={{ my: 2 }} />
+      <Box sx={{ py: 1.5 }} />
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+      {/*<Divider sx={{ my: 2 }} />*/}
+
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, justifyItems: 'flex-end', justifyContent: 'flex-end', alignContent: 'flex-end' }}>
         <Button variant="contained" onClick={solve}>
           Rozwiąż
         </Button>

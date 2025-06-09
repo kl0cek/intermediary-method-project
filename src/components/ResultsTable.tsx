@@ -24,7 +24,7 @@ interface Props {
 export default function ResultsTable({ plan, totalProfit }: Props) {
   return (
     <>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" gutterBottom sx={{pt: 2}}>
         Plan Transportu
       </Typography>
       <Table size="small">

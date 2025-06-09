@@ -62,7 +62,14 @@ export default function InputTable({ data, setData }: Props) {
   }
 
   return (
-    <Table size="small">
+    <Table
+      size="small"
+      sx={{
+        '& .MuiTableCell-root': {
+          borderBottom: 'none'
+        }
+      }}
+    >
       <TableHead>
         <TableRow>
           <TableCell>Zakup ↓ / Sprzedaż →</TableCell>
